@@ -1,5 +1,6 @@
 package com.keellssuper.pointofsales2.service.impl;
 
+import com.keellssuper.pointofsales2.dto.paginated.PaginatedResponseItemDTO;
 import com.keellssuper.pointofsales2.dto.request.CustomerUpdateDTO;
 import com.keellssuper.pointofsales2.dto.request.ItemSaveRequestDTO;
 import com.keellssuper.pointofsales2.dto.request.ItemUpdateRequestDTO;
@@ -13,6 +14,8 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,11 +33,11 @@ public class ItemServiceIMPL implements ItemService {
 
     @Override
     public String saveItem(ItemSaveRequestDTO itemSaveRequestDTO) {
-        Item item = modelMapper.map(itemSaveRequestDTO,Item.class);
-        if(!itemRepo.existsById(item.getItemId())){
+        Item item = modelMapper.map(itemSaveRequestDTO, Item.class);
+        if (!itemRepo.existsById(item.getItemId())) {
             itemRepo.save(item);
-            return item.getItemId()+" Successfully Added";
-        }else{
+            return item.getItemId() + " Successfully Added";
+        } else {
             throw new RuntimeException("Something went Wrong");
         }
 
@@ -43,11 +46,11 @@ public class ItemServiceIMPL implements ItemService {
     @Override
     public List<ItemGetResponsseDTO> getAllItems() {
         List<Item> items = itemRepo.findAll();
-        if(items.size()>0) {
+        if (items.size() > 0) {
             List<ItemGetResponsseDTO> itemGetResponsseDTOS = modelMapper.map(items, new TypeToken<List<ItemGetResponsseDTO>>() {
             }.getType());
             return itemGetResponsseDTOS;
-        }else {
+        } else {
             throw new RuntimeException("No Data");
         }
 
@@ -56,10 +59,10 @@ public class ItemServiceIMPL implements ItemService {
     @Override
     public ItemGetResponsseDTO getItemById(int itemId) {
         Item item = itemRepo.getReferenceById(itemId);
-        if(itemRepo.existsById(itemId)) {
+        if (itemRepo.existsById(itemId)) {
             ItemGetResponsseDTO itemGetResponsseDTO = modelMapper.map(item, ItemGetResponsseDTO.class);
             return itemGetResponsseDTO;
-        }else {
+        } else {
             throw new RuntimeException("Not found");
         }
     }
@@ -67,7 +70,7 @@ public class ItemServiceIMPL implements ItemService {
     @Override
     public ItemGetResponsseDTO getItemByNameAndActiveState(String itemName) {
         boolean b = true;
-        Item item = itemRepo.findAllByItemNameEqualsAndActiveStateEquals(itemName,b);
+        Item item = itemRepo.findAllByItemNameEqualsAndActiveStateEquals(itemName, b);
         ItemGetResponsseDTO itemGetResponsseDTO = modelMapper.map(item, ItemGetResponsseDTO.class);
         return itemGetResponsseDTO;
 
@@ -75,10 +78,10 @@ public class ItemServiceIMPL implements ItemService {
 
     @Override
     public String deleteItem(int itemId) {
-        if(itemRepo.existsById(itemId)){
+        if (itemRepo.existsById(itemId)) {
             itemRepo.deleteById(itemId);
             return "Item deleted !";
-        }else {
+        } else {
             throw new RuntimeException("Something went Wrong");
         }
 
@@ -87,34 +90,55 @@ public class ItemServiceIMPL implements ItemService {
     @Override
     public ItemGetResponsseDTO getItemByNameAndActiveStateByMapStruct(String name) {
         boolean b = false;
-        Item item = itemRepo.findAllByItemNameEqualsAndActiveStateEquals(name,b);
+        Item item = itemRepo.findAllByItemNameEqualsAndActiveStateEquals(name, b);
         ItemGetResponsseDTO itemGetResponsseDTO = itemMapper.EntityToDTO(item);
         return itemGetResponsseDTO;
     }
 
     @Override
     public String updateItem(ItemUpdateRequestDTO itemUpdateRequestDTO) {
-        if (itemRepo.existsById(itemUpdateRequestDTO.getItemId())){
+        if (itemRepo.existsById(itemUpdateRequestDTO.getItemId())) {
             Item item = itemRepo.getReferenceById(itemUpdateRequestDTO.getItemId());
-            modelMapper.map(item,ItemUpdateRequestDTO.class);
+            modelMapper.map(item, ItemUpdateRequestDTO.class);
             itemRepo.save(item);
             return itemUpdateRequestDTO.getItemName();
-        }
-        else{
+        } else {
             throw new RuntimeException("No data found");
         }
 
 
     }
 
-//    public String updateCustomer(CustomerUpdateDTO customerUpdateDTO) {
-//        if(customerRepo.existsById(customerUpdateDTO.getCustomerId())){
-//            Customer customer= customerRepo.getReferenceById(customerUpdateDTO.getCustomerId());
-//            modelMapper.map(customerUpdateDTO,Customer.class);
-//            customerRepo.save(customer);
-//            return customerUpdateDTO.getCustomerName();
-//        }else {
-//            throw new RuntimeException("No Data Found ");
-//
-//
-       }
+    // Paginated Item details
+    @Override
+    public PaginatedResponseItemDTO getAllItemsWithPaginated(int page, int size) {
+        Page<Item> items = itemRepo.findAll(PageRequest.of(page, size));
+        if (items.getSize() < 1) {
+            throw new RuntimeException("No Data");
+        }
+        PaginatedResponseItemDTO paginatedResponseItemDTO = new PaginatedResponseItemDTO(
+                itemMapper.ListDTOToPage(items),
+                itemRepo.count()
+        );
+
+        return paginatedResponseItemDTO;
+    }
+
+    @Override
+    public PaginatedResponseItemDTO getItemByActiveStatusWithPaginated(boolean activeStatus, int page, int size) {
+        Page<Item> items = itemRepo.findAllByActiveStateEquals(activeStatus, PageRequest.of(page, size));
+        if (items.getSize() < 1) {
+            throw new RuntimeException("NO Data");
+
+        }
+        PaginatedResponseItemDTO paginatedResponseItemDTO = new PaginatedResponseItemDTO(
+                itemMapper.ListDTOToPage(items),
+                itemRepo.countAllByActiveStateEquals(activeStatus)
+
+        );
+
+        return paginatedResponseItemDTO;
+    }
+
+
+}

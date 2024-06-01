@@ -1,6 +1,7 @@
 package com.keellssuper.pointofsales2.service;
 
 import com.keellssuper.pointofsales2.dto.CustomerDTO;
+import com.keellssuper.pointofsales2.dto.paginated.PaginatedResponseCustomerDTO;
 import com.keellssuper.pointofsales2.dto.request.CustomerUpdateDTO;
 
 import java.util.List;
@@ -18,4 +19,8 @@ public interface CustomerService {
     List<CustomerDTO> getCustomerByActiveState(boolean activeState);
 
     String deleteCustomer(int id);
+
+    PaginatedResponseCustomerDTO getAllCustomersWithPaginated(int page, int size);
+
+    PaginatedResponseCustomerDTO getCustomerByStatusWithPaginated(boolean activeStatus, int page, int size);
 }

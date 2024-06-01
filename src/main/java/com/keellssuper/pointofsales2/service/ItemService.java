@@ -1,5 +1,6 @@
 package com.keellssuper.pointofsales2.service;
 
+import com.keellssuper.pointofsales2.dto.paginated.PaginatedResponseItemDTO;
 import com.keellssuper.pointofsales2.dto.request.ItemSaveRequestDTO;
 import com.keellssuper.pointofsales2.dto.request.ItemUpdateRequestDTO;
 import com.keellssuper.pointofsales2.dto.response.ItemGetResponsseDTO;
@@ -24,4 +25,8 @@ public interface ItemService {
 
 
     String updateItem(ItemUpdateRequestDTO itemUpdateRequestDTO);
+
+    PaginatedResponseItemDTO getAllItemsWithPaginated(int page, int size);
+
+    PaginatedResponseItemDTO getItemByActiveStatusWithPaginated(boolean activeStatus, int page, int size);
 }
