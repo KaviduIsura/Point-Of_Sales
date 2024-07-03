@@ -6,6 +6,8 @@ import com.keellssuper.pointofsales2.dto.paginated.PaginatedResponseItemDTO;
 import com.keellssuper.pointofsales2.dto.request.CustomerUpdateDTO;
 import com.keellssuper.pointofsales2.entities.Customer;
 import com.keellssuper.pointofsales2.entities.Item;
+import com.keellssuper.pointofsales2.exceptions.DuplicateException;
+import com.keellssuper.pointofsales2.exceptions.NotFoundException;
 import com.keellssuper.pointofsales2.repo.CustomerRepo;
 import com.keellssuper.pointofsales2.service.CustomerService;
 import com.keellssuper.pointofsales2.util.mappers.CustomerMapper;
@@ -37,16 +39,22 @@ public class CustomerServiceIMPL implements CustomerService {
             customerRepo.save(customer);
             return customer.getCustomerId() + "Customer Saved";
         } else {
-            throw new DuplicateKeyException("Already Added");
+            throw new DuplicateException("Already Added");
         }
 
     }
 
     @Override
     public List<CustomerDTO> getAllCustomer() {
-        List<Customer> customers = customerRepo.findAll();
-        List<CustomerDTO> customerDTOS = modelMapper.map(customers,new TypeToken<List<CustomerDTO>>(){}.getType());
-        return customerDTOS;
+        if(customerRepo.count()>0){
+            List<Customer> customers = customerRepo.findAll();
+            List<CustomerDTO> customerDTOS = modelMapper.map(customers,new TypeToken<List<CustomerDTO>>(){}.getType());
+            return customerDTOS;
+        }
+        else {
+            throw new NotFoundException("No Customer Found");
+        }
+
     }
 
     @Override
@@ -56,7 +64,7 @@ public class CustomerServiceIMPL implements CustomerService {
             CustomerDTO customerDTO = modelMapper.map(customer,CustomerDTO.class);
             return customerDTO;
         }else {
-            throw new RuntimeException("Not found !..");
+            throw new NotFoundException("Not found customer!..");
         }
     }
 
@@ -68,24 +76,30 @@ public class CustomerServiceIMPL implements CustomerService {
             customerRepo.save(customer);
             return customerUpdateDTO.getCustomerName();
         }else {
-            throw new RuntimeException("No Data Found ");
+            throw new NotFoundException("No Customer Found.");
         }
     }
 
     @Override
     public List<CustomerDTO> getCustomerByActiveState(boolean activeState) {
-        List<Customer> activeCustomers= customerRepo.findAllByActiveEquals(activeState);
-        List<CustomerDTO> customerDTOList = modelMapper.map(activeCustomers,new TypeToken<List<CustomerDTO>>(){}.getType());
-        return customerDTOList;
+        if(customerRepo.count()>0){
+            List<Customer> activeCustomers= customerRepo.findAllByActiveEquals(activeState);
+            List<CustomerDTO> customerDTOList = modelMapper.map(activeCustomers,new TypeToken<List<CustomerDTO>>(){}.getType());
+            return customerDTOList;
+        }
+        else{
+            throw new NotFoundException("No Customer Found");
+        }
+
     }
 
     @Override
     public String deleteCustomer(int id) {
         if(customerRepo.existsById(id)){
             customerRepo.deleteById(id);
-            return "Customer deleterd Successfully";
+            return "Customer Deleted Successfully";
         }else {
-            throw new RuntimeException("Something went Wrong");
+            throw new NotFoundException("Something went Wrong");
         }
 
     }
@@ -95,7 +109,7 @@ public class CustomerServiceIMPL implements CustomerService {
     public PaginatedResponseCustomerDTO getAllCustomersWithPaginated(int page, int size) {
         Page<Customer> customers = customerRepo.findAll(PageRequest.of(page, size));
         if(customers.getSize()<1){
-            throw new RuntimeException("No Data");
+            throw new NotFoundException("No Customer Found");
         }
         PaginatedResponseCustomerDTO paginatedResponseCustomerDTO = new PaginatedResponseCustomerDTO(
                customerMapper.ListDTOToPage(customers),
@@ -108,7 +122,7 @@ public class CustomerServiceIMPL implements CustomerService {
     public PaginatedResponseCustomerDTO getCustomerByStatusWithPaginated(boolean activeStatus, int page, int size) {
         Page<Customer> customers = customerRepo.findAllByActiveEquals(activeStatus,PageRequest.of(page, size));
         if (customers.getSize()<1){
-            throw new RuntimeException("No Data");
+            throw new NotFoundException("No Customer Found");
 
         }
         PaginatedResponseCustomerDTO paginatedResponseCustomerDTO = new PaginatedResponseCustomerDTO(

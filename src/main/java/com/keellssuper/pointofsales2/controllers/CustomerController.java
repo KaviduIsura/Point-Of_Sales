@@ -25,7 +25,7 @@ public class CustomerController {
     public ResponseEntity<StandardResponse>saveCustomer(@RequestBody CustomerDTO customerDTO){
     String customer= customerService.saveCustomer(customerDTO);
     return new ResponseEntity<StandardResponse>(
-            new StandardResponse(200,"Success",customer),
+            new StandardResponse(201,"Success",customer),
             HttpStatus.CREATED
     );
     }

@@ -7,6 +7,8 @@ import com.keellssuper.pointofsales2.dto.request.ItemUpdateRequestDTO;
 import com.keellssuper.pointofsales2.dto.response.ItemGetResponsseDTO;
 import com.keellssuper.pointofsales2.entities.Customer;
 import com.keellssuper.pointofsales2.entities.Item;
+import com.keellssuper.pointofsales2.exceptions.DuplicateException;
+import com.keellssuper.pointofsales2.exceptions.NotFoundException;
 import com.keellssuper.pointofsales2.repo.ItemRepo;
 import com.keellssuper.pointofsales2.service.ItemService;
 import com.keellssuper.pointofsales2.util.mappers.ItemMapper;
@@ -38,7 +40,7 @@ public class ItemServiceIMPL implements ItemService {
             itemRepo.save(item);
             return item.getItemId() + " Successfully Added";
         } else {
-            throw new RuntimeException("Something went Wrong");
+            throw new DuplicateException("Item is already Added");
         }
 
     }
@@ -51,7 +53,7 @@ public class ItemServiceIMPL implements ItemService {
             }.getType());
             return itemGetResponsseDTOS;
         } else {
-            throw new RuntimeException("No Data");
+            throw new NotFoundException("No Item Found");
         }
 
     }
@@ -63,7 +65,7 @@ public class ItemServiceIMPL implements ItemService {
             ItemGetResponsseDTO itemGetResponsseDTO = modelMapper.map(item, ItemGetResponsseDTO.class);
             return itemGetResponsseDTO;
         } else {
-            throw new RuntimeException("Not found");
+            throw new NotFoundException("No Item Found");
         }
     }
 
@@ -82,13 +84,14 @@ public class ItemServiceIMPL implements ItemService {
             itemRepo.deleteById(itemId);
             return "Item deleted !";
         } else {
-            throw new RuntimeException("Something went Wrong");
+            throw new NotFoundException("No Item Found");
         }
 
     }
 
     @Override
     public ItemGetResponsseDTO getItemByNameAndActiveStateByMapStruct(String name) {
+
         boolean b = false;
         Item item = itemRepo.findAllByItemNameEqualsAndActiveStateEquals(name, b);
         ItemGetResponsseDTO itemGetResponsseDTO = itemMapper.EntityToDTO(item);
@@ -103,7 +106,7 @@ public class ItemServiceIMPL implements ItemService {
             itemRepo.save(item);
             return itemUpdateRequestDTO.getItemName();
         } else {
-            throw new RuntimeException("No data found");
+            throw new NotFoundException("No Item Found");
         }
 
 
@@ -114,7 +117,7 @@ public class ItemServiceIMPL implements ItemService {
     public PaginatedResponseItemDTO getAllItemsWithPaginated(int page, int size) {
         Page<Item> items = itemRepo.findAll(PageRequest.of(page, size));
         if (items.getSize() < 1) {
-            throw new RuntimeException("No Data");
+            throw new NotFoundException("No Item Found");
         }
         PaginatedResponseItemDTO paginatedResponseItemDTO = new PaginatedResponseItemDTO(
                 itemMapper.ListDTOToPage(items),
@@ -128,7 +131,7 @@ public class ItemServiceIMPL implements ItemService {
     public PaginatedResponseItemDTO getItemByActiveStatusWithPaginated(boolean activeStatus, int page, int size) {
         Page<Item> items = itemRepo.findAllByActiveStateEquals(activeStatus, PageRequest.of(page, size));
         if (items.getSize() < 1) {
-            throw new RuntimeException("NO Data");
+            throw new NotFoundException("No Item Found");
 
         }
         PaginatedResponseItemDTO paginatedResponseItemDTO = new PaginatedResponseItemDTO(
