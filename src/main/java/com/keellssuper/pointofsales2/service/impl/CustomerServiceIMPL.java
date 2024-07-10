@@ -37,7 +37,7 @@ public class CustomerServiceIMPL implements CustomerService {
         Customer customer = modelMapper.map(customerDTO, Customer.class);
         if (!customerRepo.existsById(customer.getCustomerId())) {
             customerRepo.save(customer);
-            return customer.getCustomerId() + "Customer Saved";
+            return customer.getCustomerName() + "  Customer Saved";
         } else {
             throw new DuplicateException("Already Added");
         }

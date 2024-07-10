@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Set;
+
 @Entity
 @Table(name = "item")
 @AllArgsConstructor
@@ -14,26 +16,29 @@ import javax.persistence.*;
 
 public class Item {
     @Id
-    @Column(name = "item_id", length = 45)
+    @Column(name = "item_id",length = 45)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int itemId;
+    private  int itemId;
 
-    @Column(name = "item_name",length = 255, nullable = false)
+    @Column(name = "item_name",length = 100,nullable = false)
     private String itemName;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "measuring_units", length = 100, nullable = false)
+    @Column(name = "measure_type",length = 100,nullable = false)
     private MeasuringUnitType measuringUnitType;
 
-    @Column(name = "balance_qty",length = 255, nullable = false)
+    @Column(name = "balance_qty",length = 100,nullable = false)
     private double balanceQty;
 
-    @Column(name = "selling_price",length = 255, nullable = false)
-    private double sellingPrice;
-
-    @Column(name = "supplier_price",length = 255, nullable = false)
+    @Column(name = "supplier_price",length = 100,nullable = false)
     private double supplierPrice;
 
-    @Column(name = "active_state",columnDefinition = "TINYINT default 0")
+    @Column(name = "selling_price",length = 100,nullable = false)
+    private double sellingPrice;
+
+    @Column(name = "active_state", columnDefinition = "TINYINT default 0")
     private boolean activeState;
+
+    @OneToMany(mappedBy="items")
+    private Set<OrderDetails> orderDetails;
 }
